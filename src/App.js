@@ -1,9 +1,13 @@
-function App() {
+import React from "react";
+import BilliardsGame from "./components/BilliardsGame.ts";
+
+const App: React.FC = () => {
   return (
-    <div className="">
-      <p>team_intelligent_systems</p>
+    <div>
+      <h1>Billiards Game</h1>
+      <BilliardsGame />
     </div>
   );
-}
+};
 
 export default App;
