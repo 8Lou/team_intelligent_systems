@@ -1,5 +1,5 @@
 import React from "react";
-import BilliardsGame from "./components/BilliardsGame.ts";
+import BilliardsGame from "./components/BilliardsGame.tsx";
 
 const App: React.FC = () => {
   return (
