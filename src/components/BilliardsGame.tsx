@@ -27,6 +27,17 @@ const BallGame: React.FC = () => {
       if (distance <= ball.radius) {
         setSelectedBall(ball.id);
         setSelectedBallColor(ball.color);
+
+        const speed = 30; // скорость толчка
+        const newDx = (dx / distance) * speed;
+        const newDy = (dy / distance) * speed;
+
+        // толчок к выбранному шару
+        setBalls((prevBalls) =>
+          prevBalls.map((b) =>
+            b.id === ball.id ? { ...b, dx: newDx, dy: newDy } : b
+          )
+        );
       }
     });
   };
@@ -44,35 +55,35 @@ const BallGame: React.FC = () => {
       const mouseX = event.clientX - canvas.getBoundingClientRect().left;
       const mouseY = event.clientY - canvas.getBoundingClientRect().top;
 
-      setBalls((prevBalls) =>
-        prevBalls.map((ball, index) => {
-          if (index === selectedBallIndex) {
-            const dx = mouseX - ball.x;
-            const dy = mouseY - ball.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            const speed = 5; // скорость шара
+      if (balls[selectedBallIndex]) {
+        const ball = balls[selectedBallIndex];
+        const dx = mouseX - ball.x;
+        const dy = mouseY - ball.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const speed = 5; // скорость шара
 
-            let newDx = (dx / distance) * speed;
-            let newDy = (dy / distance) * speed;
+        let newDx = (dx / distance) * speed;
+        let newDy = (dy / distance) * speed;
 
-            if (
-              ball.x + newDx + ball.radius > canvas.width ||
-              ball.x + newDx - ball.radius < 0
-            ) {
-              newDx = -newDx * friction;
-            }
-            if (
-              ball.y + newDy + ball.radius > canvas.height ||
-              ball.y + newDy - ball.radius < 0
-            ) {
-              newDy = -newDy * friction;
-            }
+        if (
+          ball.x + newDx + ball.radius > canvas.width ||
+          ball.x + newDx - ball.radius < 0
+        ) {
+          newDx = -newDx * friction;
+        }
+        if (
+          ball.y + newDy + ball.radius > canvas.height ||
+          ball.y + newDy - ball.radius < 0
+        ) {
+          newDy = -newDy * friction;
+        }
 
-            return { ...ball, dx: newDx, dy: newDy };
-          }
-          return ball;
-        })
-      );
+        const updatedBalls = balls.map((ball, index) =>
+          index === selectedBallIndex ? { ...ball, dx: newDx, dy: newDy } : ball
+        );
+
+        setBalls(updatedBalls);
+      }
     }
   };
 
@@ -126,7 +137,7 @@ const BallGame: React.FC = () => {
     <div>
       <canvas
         ref={canvasRef}
-        width={400}
+        width={800}
         height={400}
         style={{ border: "1px solid black" }}
         onMouseDown={handleMouseDown}
