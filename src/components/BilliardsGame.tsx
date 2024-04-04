@@ -1,12 +1,11 @@
-import React, { useRef, useEffect, useState } from "react";
-import ColorPicker from "./ColorPicker.tsx";
+import React, { useRef, useState, useEffect } from "react";
 
 const BallGame: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [balls, setBalls] = useState([
-    { id: 1, x: 50, y: 50, dx: 2, dy: 1, color: "#FF0000", radius: 20 },
-    { id: 2, x: 150, y: 100, dx: -1, dy: 2, color: "#00FF00", radius: 15 },
-    { id: 3, x: 250, y: 150, dx: 1, dy: -2, color: "#0000FF", radius: 10 },
+    { id: 1, x: 50, y: 50, dx: 2, dy: 1, color: "#FF0000", radius: 50 },
+    { id: 2, x: 150, y: 100, dx: -1, dy: 2, color: "#00FF00", radius: 25 },
+    { id: 3, x: 250, y: 150, dx: 1, dy: -2, color: "#0000FF", radius: 30 },
   ]);
   const [selectedBall, setSelectedBall] = useState<number | null>(null);
 
@@ -27,13 +26,49 @@ const BallGame: React.FC = () => {
     });
   };
 
-  const handleColorChange = (color: string) => {
-    setBalls((prevBalls) =>
-      prevBalls.map((ball) =>
-        ball.id === selectedBall ? { ...ball, color } : ball
-      )
-    );
+  const handleMouseUp = () => {
     setSelectedBall(null);
+  };
+
+  const handleMouseMove = (event: React.MouseEvent) => {
+    if (selectedBall !== null && canvasRef.current) {
+      const selectedBallIndex = balls.findIndex(
+        (ball) => ball.id === selectedBall
+      );
+      const canvas = canvasRef.current;
+      const mouseX = event.clientX - canvas.getBoundingClientRect().left;
+      const mouseY = event.clientY - canvas.getBoundingClientRect().top;
+
+      setBalls((prevBalls) =>
+        prevBalls.map((ball, index) => {
+          if (index === selectedBallIndex) {
+            const dx = mouseX - ball.x;
+            const dy = mouseY - ball.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const speed = 5; // adjust speed as needed
+
+            let newDx = (dx / distance) * speed;
+            let newDy = (dy / distance) * speed;
+
+            if (
+              ball.x + newDx + ball.radius > canvas.width ||
+              ball.x + newDx - ball.radius < 0
+            ) {
+              newDx = -newDx; // reverse dx if ball hits vertical canvas borders
+            }
+            if (
+              ball.y + newDy + ball.radius > canvas.height ||
+              ball.y + newDy - ball.radius < 0
+            ) {
+              newDy = -newDy; // reverse dy if ball hits horizontal canvas borders
+            }
+
+            return { ...ball, dx: newDx, dy: newDy };
+          }
+          return ball;
+        })
+      );
+    }
   };
 
   useEffect(() => {
@@ -81,15 +116,9 @@ const BallGame: React.FC = () => {
         height={400}
         style={{ border: "1px solid black" }}
         onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
       ></canvas>
-      {selectedBall !== null && (
-        <div style={{ position: "absolute", top: 15, left: 15 }}>
-          <input
-            type="color"
-            onChange={(e) => handleColorChange(e.target.value)}
-          />
-        </div>
-      )}
     </div>
   );
 };
