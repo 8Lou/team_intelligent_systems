@@ -1,19 +1,24 @@
 import React from "react";
 
-type Props = {
-  setColor: (color: string) => void,
-};
+interface ColorPickerProps {
+  selectedBallColor: string;
+  onUpdateColor: (color: string) => void;
+}
 
-const ColorPicker: React.FC<Props> = ({ setColor }) => {
-  const handleColorChange = (color: string) => {
-    setColor(color);
-  };
-
+const ColorPicker: React.FC<ColorPickerProps> = ({
+  selectedBallColor,
+  onUpdateColor,
+}) => {
   return (
     <div>
-      <button onClick={() => handleColorChange("#FF0000")}>Red</button>
-      <button onClick={() => handleColorChange("#00FF00")}>Green</button>
-      <button onClick={() => handleColorChange("#0000FF")}>Blue</button>
+      <input
+        type="color"
+        value={selectedBallColor}
+        onChange={(e) => onUpdateColor(e.target.value)}
+      />
+      <button onClick={() => onUpdateColor(selectedBallColor)}>
+        Закрыть меню
+      </button>
     </div>
   );
 };
