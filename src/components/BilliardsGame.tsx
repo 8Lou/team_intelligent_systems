@@ -9,6 +9,8 @@ const BallGame: React.FC = () => {
   ]);
   const [selectedBall, setSelectedBall] = useState<number | null>(null);
 
+  const friction = 0.9; // коэффициент трения
+
   const handleMouseDown = (event: React.MouseEvent) => {
     const mouseX =
       event.clientX - canvasRef.current!.getBoundingClientRect().left;
@@ -45,7 +47,7 @@ const BallGame: React.FC = () => {
             const dx = mouseX - ball.x;
             const dy = mouseY - ball.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            const speed = 5; // adjust speed as needed
+            const speed = 5; // скорость шара
 
             let newDx = (dx / distance) * speed;
             let newDy = (dy / distance) * speed;
@@ -54,13 +56,13 @@ const BallGame: React.FC = () => {
               ball.x + newDx + ball.radius > canvas.width ||
               ball.x + newDx - ball.radius < 0
             ) {
-              newDx = -newDx; // reverse dx if ball hits vertical canvas borders
+              newDx = -newDx * friction;
             }
             if (
               ball.y + newDy + ball.radius > canvas.height ||
               ball.y + newDy - ball.radius < 0
             ) {
-              newDy = -newDy; // reverse dy if ball hits horizontal canvas borders
+              newDy = -newDy * friction;
             }
 
             return { ...ball, dx: newDx, dy: newDy };
@@ -88,13 +90,15 @@ const BallGame: React.FC = () => {
             ball.x - ball.radius < 0 ||
             ball.x + ball.radius > canvas!.width
           ) {
-            ball.dx = -ball.dx;
+            ball.x -= ball.dx * friction;
+            ball.dx = -ball.dx * friction;
           }
           if (
             ball.y - ball.radius < 0 ||
             ball.y + ball.radius > canvas!.height
           ) {
-            ball.dy = -ball.dy;
+            ball.y -= ball.dy * friction;
+            ball.dy = -ball.dy * friction;
           }
 
           ball.x += ball.dx;
