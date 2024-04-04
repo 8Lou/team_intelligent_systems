@@ -10,6 +10,7 @@ const BallGame: React.FC = () => {
   ]);
   const [selectedBall, setSelectedBall] = useState<number | null>(null);
   const [selectedBallColor, setSelectedBallColor] = useState<string>("");
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 
   const friction = 0.9; // коэффициент трения
 
@@ -40,6 +41,11 @@ const BallGame: React.FC = () => {
         );
       }
     });
+    const selectedBallIndex = balls.findIndex((b) => b.id === selectedBall);
+    if (selectedBallIndex !== -1) {
+      const selectedBall = balls[selectedBallIndex];
+      setMenuPosition({ x: selectedBall.x, y: selectedBall.y });
+    }
   };
 
   const handleMouseUp = () => {
@@ -94,6 +100,49 @@ const BallGame: React.FC = () => {
     setBalls(updatedBalls);
   };
 
+  const handleCollisions = () => {
+    balls.forEach((ball1, index1) => {
+      balls.forEach((ball2, index2) => {
+        if (index1 !== index2) {
+          const dx = ball2.x - ball1.x;
+          const dy = ball2.y - ball1.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          const totalRadius = ball1.radius + ball2.radius;
+
+          if (distance <= ball1.radius + ball2.radius) {
+            // Нормализация вектора
+            const normalX = dx / distance;
+            const normalY = dy / distance;
+
+            // Расчет относительной скорости
+            const relativeVelocityX = ball2.dx - ball1.dx;
+            const relativeVelocityY = ball2.dy - ball1.dy;
+
+            // Проекция относительной скорости на нормаль
+            const velAlongNormal =
+              relativeVelocityX * normalX + relativeVelocityY * normalY;
+
+            // Условие для столкновения (шары удаляются из друг друга)
+            if (velAlongNormal > 0) {
+              return;
+            }
+
+            // Расчет импульса
+            const e = 1; // Коэффициент восстановления
+            const j = -(1 + e) * velAlongNormal;
+            const massSum = ball1.radius + ball2.radius;
+
+            // Изменение скорости шаров
+            ball1.dx -= (j * normalX) / massSum;
+            ball1.dy -= (j * normalY) / massSum;
+            ball2.dx += (j * normalX) / massSum;
+            ball2.dy += (j * normalY) / massSum;
+          }
+        }
+      });
+    });
+  };
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
@@ -134,7 +183,7 @@ const BallGame: React.FC = () => {
   }, [balls]);
 
   return (
-    <div>
+    <div style={{ position: "relative" }}>
       <canvas
         ref={canvasRef}
         width={800}
@@ -145,10 +194,18 @@ const BallGame: React.FC = () => {
         onMouseUp={handleMouseUp}
       ></canvas>
       {selectedBall !== null && (
-        <ColorPicker
-          selectedBallColor={selectedBallColor}
-          onUpdateColor={handleUpdateColor}
-        />
+        <div
+          style={{
+            position: "absolute",
+            top: menuPosition.y,
+            left: menuPosition.x + 50, // расстояние от шара
+          }}
+        >
+          <ColorPicker
+            selectedBallColor={selectedBallColor}
+            onUpdateColor={handleUpdateColor}
+          />
+        </div>
       )}
     </div>
   );
