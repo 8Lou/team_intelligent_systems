@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import ColorPicker from "./ColorPicker.tsx";
 
 const BallGame: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -8,6 +9,7 @@ const BallGame: React.FC = () => {
     { id: 3, x: 250, y: 150, dx: 1, dy: -2, color: "#0000FF", radius: 30 },
   ]);
   const [selectedBall, setSelectedBall] = useState<number | null>(null);
+  const [selectedBallColor, setSelectedBallColor] = useState<string>("");
 
   const friction = 0.9; // коэффициент трения
 
@@ -24,6 +26,7 @@ const BallGame: React.FC = () => {
 
       if (distance <= ball.radius) {
         setSelectedBall(ball.id);
+        setSelectedBallColor(ball.color);
       }
     });
   };
@@ -71,6 +74,13 @@ const BallGame: React.FC = () => {
         })
       );
     }
+  };
+
+  const handleUpdateColor = (color: string) => {
+    const updatedBalls = balls.map((ball) =>
+      ball.id === selectedBall ? { ...ball, color: color } : ball
+    );
+    setBalls(updatedBalls);
   };
 
   useEffect(() => {
@@ -123,6 +133,12 @@ const BallGame: React.FC = () => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
       ></canvas>
+      {selectedBall !== null && (
+        <ColorPicker
+          selectedBallColor={selectedBallColor}
+          onUpdateColor={handleUpdateColor}
+        />
+      )}
     </div>
   );
 };
